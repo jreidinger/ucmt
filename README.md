@@ -42,8 +42,6 @@ The main goal is to provide tool for local configuration that allows easy transi
 - frontend works on top of YAML + can call that CLI
 - apply is just different CLI for given backend, additional features like dry run can be also supported by this CLI. machine output is must have
 
-## Resources
+## Discovery
 
-- <https://docs.saltproject.io/en/3000/ref/states/all/salt.states.user.html>
-- <https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html>
-- <https://docs.ansible.com/ansible/latest/user_guide/playbooks_checkmode.html>
+There is discovery tool that try to extract yaml file describing configuration from system. It uses ansible as it is faster then salt-call to get that info. It can also extract info without root access, but information is mroe limited.

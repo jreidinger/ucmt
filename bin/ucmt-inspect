@@ -3,22 +3,11 @@
 require "cheetah"
 require "yaml"
 
-def salt_users
-  res = Cheetah.run("salt-call", "--out", "yaml", "--local", "user.getent", stdout: :capture)
-  YAML.load(res)["local"]
-end
-
-KEYS = [ "name", "uid", "gid", "groups", "shell", "home", "fullname" ]
-def transform(data)
-  data
-    .select { |d| d["uid"] > 500 } # select only non system users
-    .map { |d| KEYS.each_with_object({}) { |k, r| r[k] = d[k] }}# select only useful data
-end
+require "ucmt/discovery/local_users"
 
 def write(io, data)
   io.puts(data.to_yaml)
 end
 
-users = salt_users
-users = transform(users)
+users = UCMT::Discovery::LocalUsers.new.read_data
 write(STDOUT, users)
