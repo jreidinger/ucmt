@@ -80,6 +80,11 @@ module UCMT
             if user["gid"] == gid || group_users.include?(user["name"])
               user["groups"] << name
             end
+
+            if user["gid"] == gid
+              user["primary_group"] = name
+              user.delete("gid")
+            end
           end
           user["password"] = passwd[user["name"]].first if passwd[user["name"]]
         end
