@@ -3,12 +3,34 @@
 require "yaml"
 
 require "ucmt/salt"
+require 'optimist'
+opts = Optimist::options do
+  opt :config, "Create salt configuration from ucmt configuration. Can be passed also as STDIN.", type: String
+  opt :salt_directory, "Where to write respective read salt configuration", type: String, default: "/srv/salt"
+  opt :dry_run, "Just prints state and what actions will be applied"
+  opt :apply, "Apply configuration to system"
+end
+Optimist::die :apply, "Cannot have apply and dry_run together" if opts[:dry_run] && opts[:apply]
 
-def read
+def read(path)
   data = STDIN.read
   YAML.load(data)
 end
 
-data = read
-salt = UCMT::Salt.new(data)
-salt.write("/srv/salt")
+if opts[:config]
+  data = YAML.load_file(opts[:config])
+else
+  stdin = STDIN.tty? ? nil : STDIN.read
+  data = YAML.load(stdin) if stdin && !stdin.empty?
+end
+
+salt = UCMT::Salt.new(opts[:salt_directory])
+if data
+  salt.write(data)
+end
+if opts[:dry_run]
+  salt.dry_run
+end
+if opts[:apply]
+  salt.apply
+end

@@ -4,16 +4,30 @@ require "fileutils"
 
 module UCMT
   class Salt
-    def initialize(data)
-      @data = data
+    def initialize(output_dir)
+      @output_dir = output_dir
     end
 
-    def write(output_dir)
-      FileUtils.mkdir_p(output_dir)
-      write_local_users(output_dir)
+    def write(data)
+      FileUtils.mkdir_p(@output_dir)
+
+      states = []
+      states << "local_users" if write_local_users(data)
+
+      write_states(states)
+    end
+
+    def dry_run
+      Cheetah.run("salt-call", "--local", "--file-root=#{@output_dir}", "state.apply", "test=true", stdout: STDOUT)
     end
 
   private
+
+    def write_states(states)
+      content = { "base" => { "*" => states } }
+
+      File.write(File.join(@output_dir, "top.sls"), content.to_yaml)
+    end
 
     USERS_MAPPING = {
       "fullname" => "fullname",
@@ -25,12 +39,11 @@ module UCMT
       "home" => "home",
       "password" => "password"
     }
-    def write_local_users(output_dir)
+    def write_local_users(data)
       result = {}
 
-      puts @data.inspect
-      users_data = @data["local_users"]
-      return unless users_data
+      users_data = data["local_users"]
+      return false unless users_data
 
       (users_data["add"] || []).each do |user|
         key = user["name"]
@@ -48,7 +61,9 @@ module UCMT
         result[key] = { key2 => [{"name" => user["name"]}] }
       end
 
-      File.write(File.join(output_dir, "local_users.sls"), result.to_yaml)
+      File.write(File.join(@output_dir, "local_users.sls"), result.to_yaml)
+
+      return true
     end
   end
 end
