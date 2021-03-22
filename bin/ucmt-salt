@@ -1,0 +1,14 @@
+#! /usr/bin/ruby
+
+require "yaml"
+
+require "ucmt/salt"
+
+def read
+  data = STDIN.read
+  YAML.load(data)
+end
+
+data = read
+salt = UCMT::Salt.new(data)
+salt.write("/srv/salt")

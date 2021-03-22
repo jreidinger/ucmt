@@ -1,6 +1,5 @@
 #! /usr/bin/ruby
 
-require "cheetah"
 require "yaml"
 
 require "ucmt/discovery/local_users"
