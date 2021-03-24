@@ -1,0 +1,22 @@
+#! /usr/bin/ruby
+
+require "yaml"
+require 'optimist'
+
+require "ucmt/discovery/local_users"
+
+def write(io, data)
+  io.puts(data.to_yaml)
+end
+
+opts = Optimist::options do
+  banner "Creates UCMT configuration from system configuration.\nCreated configuration contains more information when run as root user."
+  opt :path, "Path to UCMT configuration", type: String
+end
+
+users = UCMT::Discovery::LocalUsers.new.read_data
+if opts[:path]
+  File.open(opts[:path], "w") { |f| write(f, users) }
+else
+  write(STDOUT, users)
+end

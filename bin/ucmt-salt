@@ -4,7 +4,9 @@ require "yaml"
 
 require "ucmt/salt"
 require 'optimist'
+
 opts = Optimist::options do
+  banner "Salt backend to write salt configuration from UCMT configuration, run it or dry run it."
   opt :config, "Create salt configuration from ucmt configuration. Can be passed also as STDIN.", type: String
   opt :salt_directory, "Where to write respective read salt configuration", type: String, default: "/srv/salt"
   opt :dry_run, "Just prints state and what actions will be applied"
@@ -20,12 +22,18 @@ else
 end
 
 salt = UCMT::Salt.new(opts[:salt_directory])
+nocmd = true
 if data
   salt.write(data)
+  nocmd = false
 end
 if opts[:dry_run]
   salt.dry_run
+  nocmd = false
 end
 if opts[:apply]
   salt.apply
+  nocmd = false
 end
+
+Optimist::die "At least one of UCMT configuration/apply/dry-run has to be specified." if nocmd

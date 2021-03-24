@@ -5,6 +5,7 @@ require "yaml"
 require "ucmt/ansible"
 require 'optimist'
 opts = Optimist::options do
+  banner "Ansible backend to write salt configuration from UCMT configuration, run it or dry run it."
   opt :config, "Create salt configuration from ucmt configuration. Can be passed also as STDIN.", type: String
   opt :ansible_directory, "Where to write respective read states.yml", type: String, default: "~/"
   opt :dry_run, "Just prints state and what actions will be applied"
@@ -20,13 +21,18 @@ else
 end
 
 ansible = UCMT::Ansible.new(File.expand_path(opts[:ansible_directory]))
+nocmd = true
 if data
   ansible.write(data)
+  nocmd = false
 end
 if opts[:dry_run]
   ansible.dry_run
+  nocmd = false
 end
 if opts[:apply]
   ansible.apply
+  nocmd = false
 end
 
+Optimist::die "At least one of UCMT configuration/apply/dry-run has to be specified." if nocmd

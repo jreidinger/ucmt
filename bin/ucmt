@@ -1,0 +1,34 @@
+#! /usr/bin/ruby
+
+require 'optimist'
+require "cheetah"
+
+bin_dirs = ENV["PATH"].split(":")
+commands = bin_dirs.each_with_object([]) do |dir, res|
+  Dir["#{dir}/ucmt-*"].each do |cmd|
+    res << File.basename(cmd).delete_prefix("ucmt-")
+  end
+end
+
+commands.uniq!
+commands.sort!
+
+opts = Optimist.options do
+  opt :list_commands, "List all available commands"
+  stop_on commands
+end
+
+if opts[:list_commands]
+  puts "Avaible commands:"
+  commands.each do |cmd|
+    help = Cheetah.run("ucmt-#{cmd}", "--help", stdout: :capture).lines.first.chomp
+    puts "#{cmd}\t#{help}"
+  end
+
+  exit 0
+end
+
+Optimist::educate if ARGV.empty?
+cmd = ARGV.shift
+ARGV.unshift("ucmt-#{cmd}")
+exec(*ARGV)
