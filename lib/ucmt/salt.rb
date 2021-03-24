@@ -21,6 +21,10 @@ module UCMT
       Cheetah.run("salt-call", "--local", "--file-root=#{@output_dir}", "state.apply", "test=true", stdout: STDOUT)
     end
 
+    def apply
+      Cheetah.run("salt-call", "--local", "--file-root=#{@output_dir}", "state.apply", stdout: STDOUT)
+    end
+
   private
 
     def write_states(states)
