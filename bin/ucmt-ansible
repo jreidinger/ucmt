@@ -2,11 +2,11 @@
 
 require "yaml"
 
-require "ucmt/salt"
+require "ucmt/ansible"
 require 'optimist'
 opts = Optimist::options do
   opt :config, "Create salt configuration from ucmt configuration. Can be passed also as STDIN.", type: String
-  opt :salt_directory, "Where to write respective read salt configuration", type: String, default: "/srv/salt"
+  opt :ansible_directory, "Where to write respective read states.yml", type: String, default: "~/"
   opt :dry_run, "Just prints state and what actions will be applied"
   opt :apply, "Apply configuration to system"
 end
@@ -19,13 +19,14 @@ else
   data = YAML.load(stdin) if stdin && !stdin.empty?
 end
 
-salt = UCMT::Salt.new(opts[:salt_directory])
+ansible = UCMT::Ansible.new(File.expand_path(opts[:ansible_directory]))
 if data
-  salt.write(data)
+  ansible.write(data)
 end
 if opts[:dry_run]
-  salt.dry_run
+  ansible.dry_run
 end
 if opts[:apply]
-  salt.apply
+  ansible.apply
 end
+
