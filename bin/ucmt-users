@@ -1,0 +1,108 @@
+#! /usr/bin/ruby
+
+require "yaml"
+require 'optimist'
+
+require 'ucmt/users'
+
+def write(io, data)
+  io.puts(data.to_yaml)
+end
+
+subcommands = [ "add", "edit", "remove", "ignore", "list", "show"]
+
+user_opts = Optimist::options do
+  banner("CLI for user managent in UCMT configuration.\n" \
+    "Configuration can be passed on stdin and then modified one to stdout or edit in place when using config option.\n" \
+    "Usage:\n\n" \
+    "  ucmt-users <users options> <action> <action options>\n\n" \
+    "Available actions: add, edit, remove, ignore, list, show\n" \
+    "Use ucmt-users <action> --help for more details for specific actions.\n" \
+    "Users options:\n")
+  opt :config, "Configuration to edit in place.", type: String
+  stop_on subcommands
+end
+
+if user_opts[:config]
+  data = File.exist?(user_opts[:config]) && YAML.load_file(user_opts[:config])
+else
+  stdin = STDIN.tty? ? nil : STDIN.read
+  data = YAML.load(stdin) if stdin && !stdin.empty?
+end
+data ||= {}
+
+users = UCMT::Users.new(data)
+
+write_result = false
+
+loop do
+  command = ARGV.shift
+  case command
+  when "add", "edit"
+    write_result = true
+    cmd_opts = Optimist::options do
+      banner "Adds/Edits user"
+      opt :name, "Name of user. Mandatory argument.", type: String
+      opt :fullname, "Full name of user.", type: String
+      opt :no_fullname, "Do not specify full name of user."
+      opt :uid, "User ID number.", type: Integer
+      opt :no_uid, "Do not specify User ID."
+      opt :primary_group, "User primary group specified by name.", type: String
+      opt :no_primary_group, "Do not specify primary group."
+      opt :shell, "User shell.", type: String
+      opt :no_shell, "Do not specify user shell."
+      opt :home, "User home directory.", type: String
+      opt :no_home, "Do not specify user home directory."
+      opt :password, "Set user password. Both already encrypted and plain password is accepted. Always stored as encrypted.", type: String
+      opt :no_password, "Do not specify user password."
+      opt :forbid_logging, "Do not allow user to login"
+      stop_on subcommands
+    end
+    Optimist::die :name, "Name is mandatory" unless cmd_opts[:name]
+    users.edit(cmd_opts)
+  when "remove"
+    write_result = true
+    cmd_opts = Optimist::options do
+      banner "Marks user to be removed."
+      opt :name, "Name of user. Mandatory argument.", type: String
+      stop_on subcommands
+    end
+    Optimist::die :name, "Name is mandatory" unless cmd_opts[:name]
+    users.remove(cmd_opts[:name])
+  when "ignore"
+    write_result = true
+    cmd_opts = Optimist::options do
+      banner "Mark user to not be modified."
+      opt :name, "Name of user. Mandatory argument.", type: String
+      stop_on subcommands
+    end
+    Optimist::die :name, "Name is mandatory" unless cmd_opts[:name]
+    users.ignore(cmd_opts[:name])
+  when "list"
+    cmd_opts = Optimist::options do
+      banner "List all user to modify."
+      stop_on subcommands
+    end
+    users.list
+  when "show"
+    cmd_opts = Optimist::options do
+      banner "Mark user to not be modified."
+      opt :name, "Name of user. Mandatory argument.", type: String
+      stop_on subcommands
+    end
+    Optimist::die :name, "Name is mandatory" unless cmd_opts[:name]
+    users.show(cmd_opts[:name])
+  when nil
+    break
+  else
+    Optimist.die "Invalid action '#{command}'"
+  end
+end
+
+if write_result
+  if user_opts[:config]
+    File.open(user_opts[:config], "w") { |f| write(f, data) }
+  else
+    write(STDOUT, data)
+  end
+end
