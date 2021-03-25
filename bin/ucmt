@@ -29,6 +29,8 @@ if opts[:list_commands]
 end
 
 Optimist::educate if ARGV.empty?
+Optimist::die "Unknown command '#{ARGV.first}'" unless commands.include?(ARGV.first)
+
 cmd = ARGV.shift
 ARGV.unshift("ucmt-#{cmd}")
 exec(*ARGV)
