@@ -42,6 +42,16 @@ The main goal is to provide tool for local configuration that allows easy transi
 - frontend works on top of YAML + can call that CLI
 - apply is just different CLI for given backend, additional features like dry run can be also supported by this CLI. machine output is must have
 
+### Live Action
+
+Here is ucmt in action. At first it shows result of creating ucmt config with users command. Then it will generate salt configuration and apply it to create new user. At the end it remove this user and use ansible for it.
+
+![Gif support missing](https://raw.githubusercontent.com/jreidinger/ucmt/main/images/ucmt.gif)
+
 ## Discovery
 
 There is discovery tool that try to extract yaml file describing configuration from system. It uses ansible as it is faster then salt-call to get that info. It can also extract info without root access, but information is mroe limited.
+
+## Backends
+
+So far there are two backends - one for ansible and one for salt. Backend can create configuration for target tool, can apply it and can also do dry-run to show what will change.

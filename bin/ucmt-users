@@ -53,9 +53,10 @@ loop do
       opt :no_shell, "Do not specify user shell."
       opt :home, "User home directory.", type: String
       opt :no_home, "Do not specify user home directory."
-      opt :password, "Set user password. Both already encrypted and plain password is accepted. Always stored as encrypted.", type: String
-      opt :no_password, "Do not specify user password."
-      opt :forbid_logging, "Do not allow user to login"
+# TODO: password support
+#      opt :password, "Set user password. Both already encrypted and plain password is accepted. Always stored as encrypted.", type: String
+#      opt :no_password, "Do not specify user password."
+#      opt :forbid_logging, "Do not allow user to login"
       stop_on subcommands
     end
     Optimist::die :name, "Name is mandatory" unless cmd_opts[:name]
