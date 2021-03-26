@@ -48,6 +48,22 @@ Here is ucmt in action. At first it shows result of creating ucmt config with us
 
 ![Gif support missing](https://raw.githubusercontent.com/jreidinger/ucmt/main/images/ucmt.gif)
 
+### Future
+
+Nice features for future ( order is random ):
+
+- remote apply and discovery
+- more areas to cover
+- more backends
+- GUI tool
+- interactive CLI
+- rubocop style and unit testing of code
+
+
+## How to Start
+
+ucmt is now distributed as ruby gem. So simple `gem install ucmt` is enough to start playing with it. For salt and ansible backend respective tools are needed. For discovery ansible is needed.
+
 ## Discovery
 
 There is discovery tool that try to extract yaml file describing configuration from system. It uses ansible as it is faster then salt-call to get that info. It can also extract info without root access, but information is mroe limited.
