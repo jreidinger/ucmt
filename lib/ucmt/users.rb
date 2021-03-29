@@ -38,8 +38,7 @@ module UCMT
       handle_option(:primary_group, user, options)
       handle_option(:shell, user, options)
       handle_option(:home, user, options)
-
-      # TODO: PASSWORD
+      handle_password(user, options)
       # TODO: groups
     end
 
@@ -70,6 +69,22 @@ module UCMT
     end
 
   private
+
+    def handle_password(user, options)
+      if options[:no_password]
+        user.delete("password")
+      elsif options[:forbid_logging]
+        user["password"] = "x"
+      elsif options[:password]
+        password = options[:password]
+        # check encrypted password
+        if password !~ /^\$\d+\$/
+          password = Cheetah.run("mkpasswd", "-m", "sha-512", "--stdin",
+            stdin: password, stdout: :capture).strip
+        end
+        user["password"] = password
+      end
+    end
 
     def handle_option(key, user, options)
       if options[:"no_#{key}"]
